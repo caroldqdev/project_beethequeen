@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-"""Desenho do painel de Harmonia da Colmeia (radar de 5 eixos) em pygame."""
+"""Desenho do painel de Harmonia da Colmeia (radar de 5 eixos) e das barras
+de recurso/afinidade em pygame."""
 import math
 import pygame
-from events_data import HARMONIA_AXES, HARMONIA_LABELS
+from data import HARMONIA_AXES, HARMONIA_LABELS
 
 BG = (255, 255, 255)
 GRID = (200, 210, 200)
@@ -16,7 +17,6 @@ def draw_radar(surface, center, radius, values, font, max_value=100):
     n = len(HARMONIA_AXES)
     angle_step = 2 * math.pi / n
 
-    # grade (aneis concentricos)
     for ring in (0.25, 0.5, 0.75, 1.0):
         points = []
         for i in range(n):
@@ -26,7 +26,6 @@ def draw_radar(surface, center, radius, values, font, max_value=100):
             points.append((x, y))
         pygame.draw.polygon(surface, GRID, points, 1)
 
-    # eixos + rotulos
     for i, axis in enumerate(HARMONIA_AXES):
         ang = -math.pi / 2 + i * angle_step
         x = cx + math.cos(ang) * radius
@@ -38,7 +37,6 @@ def draw_radar(surface, center, radius, values, font, max_value=100):
         rect = label.get_rect(center=(lx, ly))
         surface.blit(label, rect)
 
-    # poligono de valores
     poly_points = []
     for i, axis in enumerate(HARMONIA_AXES):
         val = max(0, min(max_value, values.get(axis, 0)))

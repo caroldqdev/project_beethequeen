@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-"""Desenho do painel de Harmonia da Colmeia (radar de 5 eixos) e das barras
-de recurso/afinidade em pygame."""
+"""Funcoes de desenho de graficos simples em pygame: o radar de 5 eixos
+da Harmonia da Colmeia (draw_radar) e uma barra de progresso generica
+(draw_bar), usada tambem para Mel, Operarias, Relacao e Afinidade."""
 import math
 import pygame
-from data import HARMONIA_AXES, HARMONIA_LABELS
+from data.axes import HARMONIA_AXES, HARMONIA_LABELS
 
 BG = (255, 255, 255)
 GRID = (200, 210, 200)

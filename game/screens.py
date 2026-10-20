@@ -20,9 +20,9 @@ Onde editar COMO aparece (posicao, cor, tamanho):
 import math
 import pygame
 
-from data import COUNCILORS, PROFILE_TEXTS, ECOLOGY_MESSAGE
-from puzzles import get_instructions
-from ui.harmonia import draw_radar, draw_bar
+from data.councilors import COUNCILORS
+from data.profiles import PROFILE_TEXTS, ECOLOGY_MESSAGE
+from ui.graphics import draw_radar, draw_bar
 from .constants import (WIDTH, HEIGHT, WHITE, DARK, GOLD, RELACAO_COLOR,
                          STATE_INTRO, STATE_COUNCIL_INTRO, STATE_QUEEN_INTRO,
                          STATE_SEASON, STATE_CONTEXT, STATE_CHOICE,
@@ -157,7 +157,7 @@ class GameScreens:
         y = 220
         y = self.draw_wrapped_centered(
             "A Rainha Anciã se aposenta e escolhe você como sucessora.\n"
-            "Você governa apoiada por quatro conselheiras:",
+            "Você governa por 4 estações, apoiada por quatro conselheiras:",
             pygame.Rect(120, y, WIDTH - 240, 60), self.font_body)
 
         y = self.draw_wrapped_centered(
@@ -166,9 +166,9 @@ class GameScreens:
 
         y += 10  # respiro extra antes do resto do texto
         self.draw_wrapped_centered(
-            "Cada escolha altera o painel de Harmonia da Colmeia, a Relação com a Colmeia, "
-            "consome recursos e muda a afinidade das conselheiras. "
-            "Não existe final único! existe o reino que você constrói."
+            "Cada escolha altera o painel de Harmonia da Colmeia, a Relação\n"
+            "com a Colmeia, consome recursos e muda a afinidade das\n"
+            "conselheiras. Não existe final único! existe o reino que você constrói."
             "\n\nPressione ENTER para conhecer o Conselho.",
             pygame.Rect(120, y, WIDTH - 240, 160), self.font_body)
 
@@ -205,7 +205,7 @@ class GameScreens:
         header = self.font_title.render("A Nova Rainha", True, DARK)
         self.screen.blit(header, header.get_rect(center=(WIDTH // 2, 160)))
         closing = ("Você é a nova Rainha. A cada estação, o Conselho vai propor 4 caminhos. "
-                   "Não existe caminho perfeito. Existe o caminho que você escolhe sustentar.")
+                   "Não existe caminho perfeito! existe o caminho que voce escolhe sustentar.")
         self.draw_wrapped(closing, pygame.Rect(160, 240, WIDTH - 320, 160), self.font_body,
                            color=(70, 70, 70))
         hint = self.font_small.render("Pressione ENTER para comecar o reinado", True, GOLD)
@@ -229,7 +229,7 @@ class GameScreens:
         draw_panel(self.screen, panel)
         header = self.font_h2.render(f"{ev['season']} - Evento {ev['id']}: {ev['title']}", True, DARK)
         self.screen.blit(header, (panel.left + 24, panel.top + 20))
-        self.draw_wrapped(ev["context"], pygame.Rect(panel.left + 24, panel.top + 70,
+        self.draw_wrapped(self.get_event_context(ev), pygame.Rect(panel.left + 24, panel.top + 70,
                                                        panel.width - 48, 200), self.font_body)
         hint = self.font_small.render("Pressione ENTER para reunir o Conselho", True, GOLD)
         self.screen.blit(hint, (panel.left + 24, panel.bottom - 40))
@@ -284,7 +284,7 @@ class GameScreens:
         self.draw_wrapped(f"{opt['councilor']} propos: {opt['action']}",
                            pygame.Rect(140, 190, WIDTH - 280, 50), self.font_small,
                            color=(90, 90, 90))
-        instructions = get_instructions(self.pending_puzzle_name)
+        instructions = self.get_instructions(self.pending_puzzle_name)
         self.draw_wrapped(instructions, pygame.Rect(140, 260, WIDTH - 280, 120), self.font_body)
         seconds_left = max(1, math.ceil(self.briefing_timer))
         countdown = self.font_title.render(str(seconds_left), True, GOLD)
@@ -335,7 +335,18 @@ class GameScreens:
         y = self.draw_wrapped(f"Efeitos nesta rodada: {eff_str}",
                                pygame.Rect(panel.left + 30, y, panel.width - 60, 50),
                                self.font_small, color=GOLD)
-        y += 10
+        y += 6
+        if self.cost_lines:
+            custo_str = "   ".join(self.cost_lines)
+            y = self.draw_wrapped(f"Custo desta escolha: {custo_str}",
+                                   pygame.Rect(panel.left + 30, y, panel.width - 60, 50),
+                                   self.font_small, color=(90, 90, 90))
+            y += 6
+        if self.prev_result_note:
+            y = self.draw_wrapped(self.prev_result_note,
+                                   pygame.Rect(panel.left + 30, y, panel.width - 60, 50),
+                                   self.font_small, color=(120, 90, 160))
+            y += 10
         if self.fail_penalty_text:
             y = self.draw_wrapped(f"Penalidade extra de {opt['councilor']}: {self.fail_penalty_text}",
                                    pygame.Rect(panel.left + 30, y, panel.width - 60, 50),

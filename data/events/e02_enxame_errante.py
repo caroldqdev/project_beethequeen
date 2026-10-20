@@ -3,6 +3,10 @@
 
 Cada opcao tem: councilor, action, cost {mel, operarias, relacao},
 effects (deltas nos 5 eixos de Harmonia), affinity, puzzle.
+
+Este arquivo NAO sabe (e nao precisa saber) que o resultado do Evento 1
+influencia a frase de introducao e o custo daqui -- essa "ponte" mora
+inteira em results/r01_para_e02.py, orquestrada por game/orchestrator.py.
 """
 
 EVENT = {'id': 2,
@@ -11,8 +15,7 @@ EVENT = {'id': 2,
  'context': 'Um enxame de abelhas selvagens sem colmeia pede abrigo. Aceita-las muda a '
             'composicao genetica e social da colonia.',
  'options': [{'councilor': 'Flora',
-              'action': 'Acolher e integrar respeitando a diversidade genetica do '
-                        'enxame',
+              'action': 'Acolher e integrar respeitando a diversidade genetica do enxame',
               'cost': {'mel': -22, 'operarias': 0, 'relacao': 3},
               'effects': {'biodiversidade': 8, 'populacao': 5},
               'affinity': {'self': 2, 'others': -1},

@@ -52,6 +52,12 @@ from telas import desenho, layout
 from telas.visual import Visual
 
 
+# As telas do JOGO (o que vem depois da introdução). Nelas a tela nunca passa sozinha, e o
+# "Pressione ENTER..." só aparece depois de ATRASO_DA_DICA_NO_JOGO segundos (config.py).
+TELAS_DO_JOGO = (config.CONTEXTO, config.PREPARO, config.MINIGAME,
+                 config.RESULTADO_DO_MINIGAME, config.CONSEQUENCIA)
+
+
 class Jogo:
 
     def __init__(self):
@@ -84,8 +90,13 @@ class Jogo:
 
     @property
     def dica_visivel(self):
-        """Já passou o ATRASO_DA_DICA? (a dica "Pressione ENTER..." só aparece depois)"""
-        return self.tempo_da_tela >= config.ATRASO_DA_DICA
+        """Já passou o tempo de espera? (a dica "Pressione ENTER..." só aparece depois).
+        Nas telas do jogo a espera é o ATRASO_DA_DICA_NO_JOGO; na introdução, o ATRASO_DA_DICA."""
+        if self.tela in TELAS_DO_JOGO:
+            atraso = getattr(config, "ATRASO_DA_DICA_NO_JOGO", 10)
+        else:
+            atraso = config.ATRASO_DA_DICA
+        return self.tempo_da_tela >= atraso
 
     def texto_de_abertura(self):
         """O texto de abertura do evento (pode vir trocado pela ponte do anterior)."""
@@ -211,11 +222,14 @@ class Jogo:
     def medir_tempo_da_tela(self, dt):
         """Conta há quanto tempo a tela atual está aí (a dica do ENTER usa isso)
         e, passado o AVANCO_AUTOMATICO dela, avança (o mesmo que o ENTER)."""
-        chave = (self.tela, self.indice_conselheira)
-        if chave != self._chave_da_tela:
+        # (na tela do minigame, o relógio recomeça quando o jogo termina: a dica de "ver o
+        #  resultado" espera o mesmo tempo depois do fim)
+        terminou = self.tela == config.MINIGAME and self.minigame is not None and self.minigame.done
+        chave = (self.tela, self.indice_conselheira, terminou)
+        if chave != self._chave_da_tela:          # mudou de tela (por ENTER ou sozinha)
             self._chave_da_tela = chave
             self.tempo_da_tela = 0.0
-        self.tempo_da_tela += min(dt, 0.25)
+        self.tempo_da_tela += min(dt, 0.25)       # um engasgo do jogo não pula a tela
         limite = config.AVANCO_AUTOMATICO.get(self.tela)
         if limite and self.tempo_da_tela >= limite:
             self.tempo_da_tela = 0.0
@@ -228,10 +242,11 @@ class Jogo:
             for evento in pygame.event.get():
                 self.tratar_evento(evento, mouse)
 
-            self.visual.atualizar(dt)
+            self.visual.atualizar(dt)              # a abelha bate as asas
             self.medir_tempo_da_tela(dt)
 
-            if self.tela == config.PREPARO:
+            if self.tela == config.PREPARO and getattr(config, "COMECAR_O_MINIGAME_SOZINHO", False):
+                # (contagem do preparo: só se o jogo começa sozinho; senão espera o ENTER)
                 self.tempo_de_preparo -= dt
                 if self.tempo_de_preparo <= 0:
                     self.iniciar_minigame()
@@ -239,7 +254,7 @@ class Jogo:
             if self.tela == config.MINIGAME and self.minigame is not None:
                 self.minigame.update(dt)
 
-            desenho.desenhar(self.visual, self, mouse)
+            desenho.desenhar(self.visual, self, mouse)   # desenha a tela atual
 
 
 if __name__ == "__main__":

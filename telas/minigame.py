@@ -11,6 +11,7 @@ import math
 
 import pygame
 
+import config
 from config import LARGURA
 from telas import layout as L, textos
 from telas.componentes import (painel, linha, paragrafo, card_de_texto, dica_aparece,
@@ -26,9 +27,11 @@ def preparo(v, j):
         proposta = textos.PROPOSTA.format(conselheira=j.opcao["conselheira"], acao=j.opcao["acao"])
         paragrafo(v, proposta, "preparo", "proposta", L.retangulo(L.PREPARO_PROPOSTA))
         paragrafo(v, j.instrucao_do_minigame, "preparo", "instrucao", L.retangulo(L.PREPARO_INSTRUCAO))
-        segundos = max(1, math.ceil(j.tempo_de_preparo))
-        linha(v, str(segundos), "preparo", "contagem", caixa, L.PREPARO_CONTAGEM_Y)
-        linha(v, textos.DICA_PREPARO, "preparo", "dica", caixa, L.PREPARO_DICA_Y)
+        if getattr(config, "COMECAR_O_MINIGAME_SOZINHO", False):      # a contagem só existe se o jogo começa sozinho
+            segundos = max(1, math.ceil(j.tempo_de_preparo))
+            linha(v, str(segundos), "preparo", "contagem", caixa, L.PREPARO_CONTAGEM_Y)
+        if dica_aparece(v, j):
+            linha(v, textos.DICA_PREPARO, "preparo", "dica", caixa, L.PREPARO_DICA_Y)
 
     card_de_texto(v, "preparo", caixa, conteudo)
     v.abelha(L.ABELHA_NO_PREPARO)
@@ -45,7 +48,7 @@ def jogo(v, j):
         paragrafo(v, proposta, "minigame", "proposta", L.retangulo(L.MINIGAME_PROPOSTA))
         if j.minigame is not None and not v.medindo:
             j.minigame.draw(v.tela)           # o jogo em si não se mexe (e a dica vai POR CIMA dele)
-        if j.minigame is not None and j.minigame.done:
+        if j.minigame is not None and j.minigame.done and dica_aparece(v, j):
             linha(v, textos.DICA_MINIGAME, "minigame", "dica", caixa, L.MINIGAME_DICA_Y)
 
     card_de_texto(v, "minigame", caixa, conteudo)
@@ -85,8 +88,9 @@ def resultado_do_minigame(v, j):
             paragrafo(v, textos.RESULTADO_PENALIDADE.format(conselheira=j.opcao["conselheira"],
                                                             texto=resolucao.penalidade),
                       "resultado_do_minigame", "penalidade", bloco(y))
-        linha(v, textos.DICA_RESULTADO_DO_MINIGAME, "resultado_do_minigame", "dica", p,
-              p.bottom - L.RESULTADO_DICA_DA_BASE, ancora_y="topo")
+        if dica_aparece(v, j):
+            linha(v, textos.DICA_RESULTADO_DO_MINIGAME, "resultado_do_minigame", "dica", p,
+                  p.bottom - L.RESULTADO_DICA_DA_BASE, ancora_y="topo")
 
     card_de_texto(v, "resultado_do_minigame", p, conteudo)
     v.abelha((p.right + L.ABELHA_DO_PAINEL[0], p.top + L.ABELHA_DO_PAINEL[1]))

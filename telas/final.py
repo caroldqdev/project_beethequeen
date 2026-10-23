@@ -10,7 +10,7 @@ from dados.conselheiras import CONSELHEIRAS
 from dados.perfis import PERFIS, MENSAGEM_ECOLOGIA
 from telas import layout as L, textos
 from telas.componentes import (painel, texto, escrever, radar, hud, linhas_de_efeitos, linha, paragrafo,
-                               card_de_texto)
+                               card_de_texto, dica_aparece)
 
 
 def consequencia(v, j):
@@ -41,8 +41,9 @@ def consequencia(v, j):
             paragrafo(v, textos.AVISO_DE_DESEQUILIBRIO, "consequencia", "aviso",
                       pygame.Rect(p.left + m, p.bottom - L.CONSEQUENCIA_AVISO_DA_BASE, largura,
                                   L.CONSEQUENCIA_AVISO_ALTURA))
-        linha(v, textos.DICA_CONSEQUENCIA, "consequencia", "dica", p, p.bottom - L.CONSEQUENCIA_DICA_DA_BASE,
-              ancora_y="topo")
+        if dica_aparece(v, j):
+            linha(v, textos.DICA_CONSEQUENCIA, "consequencia", "dica", p, p.bottom - L.CONSEQUENCIA_DICA_DA_BASE,
+                  ancora_y="topo")
 
     card_de_texto(v, "consequencia", p, conteudo)
     v.abelha((p.right - L.CONSEQUENCIA_ABELHA_DA_DIREITA, p.top + L.ABELHA_DO_PAINEL[1]))
